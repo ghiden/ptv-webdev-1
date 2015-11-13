@@ -1,5 +1,7 @@
 (ns webdev.core
-  (:require [webdev.item.model :as items])
+  (:require [webdev.item.model :as items]
+            [webdev.item.handler :refer [handle-index-items
+                                         handle-create-item]])
   (:require [ring.adapter.jetty :as jetty]
             [ring.middleware.reload :refer [wrap-reload]]
             [ring.middleware.params :refer [wrap-params]]
@@ -55,17 +57,26 @@
   (GET "/yo/:name" [] yo)
   (GET "/calc/:a/:op/:b" [] calc)
   (GET "/about" [] about)
-  (GET "/request" [] handle-dump)
+  (ANY "/request" [] handle-dump)
+
+  (GET "/items" [] handle-index-items)
+  (POST "/items" [] handle-create-item)
+
   (not-found "Page not found"))
 
 (defn wrap-db [hdlr]
   (fn [req]
     (hdlr (assoc req :webdev/db db))))
 
+(defn wrap-server [hdlr]
+  (fn [req]
+    (assoc-in (hdlr req) [:headers "Server"] "ptv-intro-to-web")))
+
 (def app
-  (wrap-db
-   (wrap-params
-    routes)))
+  (wrap-server
+   (wrap-db
+    (wrap-params
+     routes))))
 
 (defn -main [port]
   (items/create-table db)
