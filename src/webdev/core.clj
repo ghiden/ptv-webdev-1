@@ -2,7 +2,8 @@
   (:require [webdev.item.model :as items])
   (:require [ring.adapter.jetty :as jetty]
             [ring.middleware.reload :refer [wrap-reload]]
-            [compojure.core :refer [defroutes GET]]
+            [ring.middleware.params :refer [wrap-params]]
+            [compojure.core :refer [defroutes ANY GET POST PUT DELETE]]
             [compojure.route :refer [not-found]]
             [ring.handler.dump :refer [handle-dump]]))
 
@@ -48,7 +49,7 @@
        :body (str "Unknown operator: " op)
        :headers {}})))
 
-(defroutes app
+(defroutes routes
   (GET "/" [] greet)
   (GET "/goodbye" [] goodbye)
   (GET "/yo/:name" [] yo)
@@ -56,6 +57,15 @@
   (GET "/about" [] about)
   (GET "/request" [] handle-dump)
   (not-found "Page not found"))
+
+(defn wrap-db [hdlr]
+  (fn [req]
+    (hdlr (assoc req :webdev/db db))))
+
+(def app
+  (wrap-db
+   (wrap-params
+    routes)))
 
 (defn -main [port]
   (items/create-table db)
