@@ -2,6 +2,7 @@
   (:require [webdev.item.model :as items]
             [webdev.item.handler :refer [handle-index-items
                                          handle-create-item
+                                         handle-update-item
                                          handle-delete-item]])
   (:require [ring.adapter.jetty :as jetty]
             [ring.middleware.reload :refer [wrap-reload]]
@@ -65,6 +66,7 @@
   (GET "/items" [] handle-index-items)
   (POST "/items" [] handle-create-item)
   (DELETE "/items/:item-id" [] handle-delete-item)
+  (PUT "/items/:item-id" [] handle-update-item)
 
   (not-found "Page not found"))
 
